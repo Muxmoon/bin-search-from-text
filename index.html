@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Text Search App (Binary Search)</title>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #f0f4f8, #e6eef5);
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    header {
+      background-color: #2f3e46;
+      padding: 20px;
+      color: white;
+      text-align: center;
+      border-radius: 0 0 10px 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    textarea, input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #1e88e5;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #1565c0;
+    }
+
+    pre {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      border: 1px dashed #ccc;
+    }
+
+    mark {
+      background: yellow;
+      font-weight: bold;
+    }
+
+    .back {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .back a {
+      color: #1e88e5;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .back a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🔍 Text Search App</h1>
+    <p>Enter a word and search it in the given text</p>
+  </header>
+
+  <div class="container">
+    <label for="textInput"><strong>Text to Search In:</strong></label>
+    <textarea id="textInput" rows="6">Petrichor is a pleasant smell that frequently accompanies the first rain after a long period of warm, dry weather.</textarea>
+
+    <label for="wordInput"><strong>Word to Search:</strong></label>
+    <input type="text" id="wordInput" placeholder="Enter word (e.g. rain)">
+
+    <button onclick="runCode()">Search</button>
+
+    <pre id="output">Result will appear here...</pre>
+  </div>
+
+  <div class="back">
+    <a href="index.html">← Back to Profile</a>
+  </div>
+
+  <script>
+    let pyodide;
+
+    async function main() {
+      pyodide = await loadPyodide();
+      await pyodide.runPythonAsync(`
+def highlight(txt, word):
+    return txt.replace(word, f"*{word}*")
+
+def bin_search(word, target):
+    l, r = 0, len(word) - 1
+    while(l <= r):
+        mid = (l + r) // 2
+        if(word[mid] == target):
+            return mid
+        elif(word[mid] < target):
+            l = mid + 1
+        else:
+            r = mid - 1
+    return -1
+
+def search_text(user_word, full_text):
+    user_word = user_word.strip().upper()
+    text_upper = full_text.strip().upper()
+    words = sorted(text_upper.replace(",", "").replace(".", "").split())
+    index = bin_search(words, user_word)
+    if index != -1:
+        highlighted = highlight(text_upper, user_word)
+        return "✅ Word found!\\n\\n" + highlighted
+    else:
+        return "❌ Word not found. Please try again."
+`);
+    }
+    main();
+
+    async function runCode() {
+      const text = document.getElementById("textInput").value;
+      const word = document.getElementById("wordInput").value;
+
+      try {
+        const result = await pyodide.globals.get("search_text")(word, text);
+        document.getElementById("output").textContent = result;
+      } catch (err) {
+        document.getElementById("output").textContent = "Error: " + err;
+      }
+    }
+  </script>
+</body>
+</html>
