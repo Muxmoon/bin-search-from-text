@@ -2,66 +2,89 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Text Search App (Binary Search)</title>
+  <title>🔍 Text Search App</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #f2f6fc;
+      --accent: #007bff;
+      --glass: rgba(255, 255, 255, 0.6);
+      --radius: 14px;
+    }
+
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #f0f4f8, #e6eef5);
       margin: 0;
-      padding: 20px;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
       color: #333;
     }
 
     header {
-      background-color: #2f3e46;
-      padding: 20px;
-      color: white;
       text-align: center;
-      border-radius: 0 0 10px 10px;
+      padding: 2rem 1rem;
+      backdrop-filter: blur(8px);
+      background: var(--glass);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
-    h1 {
+    header h1 {
       margin: 0;
-      font-size: 28px;
+      font-size: 2rem;
     }
 
-    .container {
-      max-width: 800px;
-      margin: 40px auto;
-      background-color: white;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: auto;
     }
 
-    textarea, input, button {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      font-size: 16px;
-      border-radius: 8px;
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    textarea, input[type="text"], button {
+      font-size: 1rem;
+      padding: 0.75rem;
+      margin-top: 1rem;
       border: 1px solid #ccc;
+      border-radius: var(--radius);
+      font-family: inherit;
+      resize: vertical;
+    }
+
+    input[type="file"] {
+      margin-top: 1rem;
     }
 
     button {
-      background-color: #1e88e5;
+      background: var(--accent);
       color: white;
       border: none;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: background 0.2s ease;
     }
 
     button:hover {
-      background-color: #1565c0;
+      background: #005fcc;
     }
 
     pre {
-      background: #f5f5f5;
-      padding: 15px;
-      border-radius: 8px;
       white-space: pre-wrap;
+      background: #f9f9f9;
+      padding: 1rem;
+      border-radius: var(--radius);
       border: 1px dashed #ccc;
+      flex-grow: 1;
+      margin-top: 1rem;
     }
 
     mark {
@@ -69,53 +92,48 @@
       font-weight: bold;
     }
 
-    .back {
-      text-align: center;
-      margin-top: 30px;
-    }
-
-    .back a {
-      color: #1e88e5;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    .back a:hover {
-      text-decoration: underline;
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>🔍 Text Search App</h1>
-    <p>Enter a word and search it in the given text</p>
+    <h1>🔍 Python Text Search App (with File Support)</h1>
+    <p>Upload a .txt file or type text manually. Then search for any word using Python in-browser!</p>
   </header>
 
-  <div class="container">
-    <label for="textInput"><strong>Text to Search In:</strong></label>
-    <textarea id="textInput" rows="6">Petrichor is a pleasant smell that frequently accompanies the first rain after a long period of warm, dry weather.</textarea>
+  <div class="grid">
+    <div class="card">
+      <label for="fileInput"><strong>📁 Load .txt file</strong></label>
+      <input type="file" id="fileInput" accept=".txt">
 
-    <label for="wordInput"><strong>Word to Search:</strong></label>
-    <input type="text" id="wordInput" placeholder="Enter word (e.g. rain)">
+      <label for="textInput"><strong>📝 Or enter text manually</strong></label>
+      <textarea id="textInput" rows="10">Petrichor is a pleasant smell that frequently accompanies the first rain after a long period of warm, dry weather.</textarea>
 
-    <button onclick="runCode()">Search</button>
+      <label for="wordInput"><strong>🔍 Word to search</strong></label>
+      <input type="text" id="wordInput" placeholder="e.g. rain">
 
-    <pre id="output">Result will appear here...</pre>
-  </div>
+      <button onclick="runSearch()">Search</button>
+    </div>
 
-  <div class="back">
-    <a href="index.html">← Back to Profile</a>
+    <div class="card">
+      <h3>🔎 Result</h3>
+      <pre id="output">Result will appear here...</pre>
+    </div>
   </div>
 
   <script>
-  let pyodide;
+    let pyodide;
 
-  async function loadAndInitPyodide() {
-    pyodide = await loadPyodide();
-    await pyodide.runPythonAsync(`
+    async function initPyodide() {
+      pyodide = await loadPyodide();
+      await pyodide.runPythonAsync(`
 def highlight(txt, word):
-    return txt.replace(word, f"<mark>{word}</mark>")
+    return txt.replace(word, f"*{word}*")
 
 def bin_search(word, target):
     l, r = 0, len(word) - 1
@@ -135,53 +153,35 @@ def search_text(user_word, full_text):
     words = sorted(text_upper.replace(",", "").replace(".", "").split())
     index = bin_search(words, user_word)
     if index != -1:
-        highlighted = highlight(full_text, user_word)
+        highlighted = text_upper.replace(user_word, f"**{user_word}**")
         return "✅ Word found!\\n\\n" + highlighted
     else:
         return "❌ Word not found. Please try again."
 `);
-  }
-
-  // Load Pyodide only after script is fully loaded
-  window.addEventListener("load", async () => {
-    try {
-      await loadAndInitPyodide();
-      console.log("✅ Pyodide loaded and ready.");
-    } catch (err) {
-      console.error("❌ Failed to load Pyodide:", err);
     }
-  });
 
-  async function runCode() {
-    const text = document.getElementById("textInput").value;
-    const word = document.getElementById("wordInput").value;
+    initPyodide();
 
-    try {
-      const searchFn = pyodide.globals.get("search_text");
-      const result = searchFn(word, text).toString(); // convert PyProxy to string
-      document.getElementById("output").innerHTML = result;
-      searchFn.destroy();
-    } catch (err) {
-      document.getElementById("output").textContent = "❌ Error: " + err;
+    async function runSearch() {
+      const text = document.getElementById("textInput").value;
+      const word = document.getElementById("wordInput").value;
+
+      try {
+        const result = await pyodide.globals.get("search_text")(word, text);
+        const highlighted = result.replace(/\*\*(.+?)\*\*/g, '<mark>$1</mark>');
+        document.getElementById("output").innerHTML = highlighted;
+      } catch (err) {
+        document.getElementById("output").textContent = "Error: " + err;
+      }
     }
-  }
-</script>
 
-
-    async function runCode() {
-  const text = document.getElementById("textInput").value;
-  const word = document.getElementById("wordInput").value;
-
-  try {
-    const searchFn = pyodide.globals.get("search_text");
-    const result = searchFn(word, text).toString(); 
-    document.getElementById("output").textContent = result;
-    searchFn.destroy();
-  } catch (err) {
-    document.getElementById("output").textContent = "❌ Error: " + err;
-  }
-}
-
+    document.getElementById("fileInput").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const text = await file.text();
+        document.getElementById("textInput").value = text;
+      }
+    });
   </script>
 </body>
 </html>
