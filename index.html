@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>🔍 Text Search App</title>
+  <title>Muxmoon_found</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet">
   <style>
     :root {
-      --bg: #f2f6fc;
+      --bg: #0a3b63;
       --accent: #007bff;
       --glass: rgba(255, 255, 255, 0.6);
       --radius: 14px;
@@ -15,7 +15,7 @@
 
     body {
       margin: 0;
-      font-family: 'Inter', sans-serif;
+      font-family: Courier New, Monospace;
       background: var(--bg);
       color: #333;
     }
@@ -88,7 +88,7 @@
     }
 
     mark {
-      background: yellow;
+      background: cyan;
       font-weight: bold;
     }
 
@@ -102,26 +102,26 @@
 <body>
 
   <header>
-    <h1>🔍 Python Text Search App (with File Support)</h1>
-    <p>Upload a .txt file or type text manually. Then search for any word using Python in-browser!</p>
+    <h1>searching...</h1>
+    <p>Upload a .txt file or type text manually. Then search for any word.</p>
   </header>
 
   <div class="grid">
     <div class="card">
-      <label for="fileInput"><strong>📁 Load .txt file</strong></label>
+      <label for="fileInput"><strong>Load .txt file</strong></label>
       <input type="file" id="fileInput" accept=".txt">
 
-      <label for="textInput"><strong>📝 Or enter text manually</strong></label>
+      <label for="textInput"><strong>Or enter text manually</strong></label>
       <textarea id="textInput" rows="10">Petrichor is a pleasant smell that frequently accompanies the first rain after a long period of warm, dry weather.</textarea>
 
-      <label for="wordInput"><strong>🔍 Word to search</strong></label>
+      <label for="wordInput"><strong>Word to search</strong></label>
       <input type="text" id="wordInput" placeholder="e.g. rain">
 
       <button onclick="runSearch()">Search</button>
     </div>
 
     <div class="card">
-      <h3>🔎 Result</h3>
+      <h3>Result</h3>
       <pre id="output">Result will appear here...</pre>
     </div>
   </div>
@@ -154,9 +154,9 @@ def search_text(user_word, full_text):
     index = bin_search(words, user_word)
     if index != -1:
         highlighted = text_upper.replace(user_word, f"**{user_word}**")
-        return "✅ Word found!\\n\\n" + highlighted
+        return "Word found!\\n\\n" + highlighted
     else:
-        return "❌ Word not found. Please try again."
+        return "Word not found. Try again."
 `);
     }
 
