@@ -109,13 +109,13 @@
   </div>
 
   <script>
-    let pyodide;
+  let pyodide;
 
-    async function main() {
-      pyodide = await loadPyodide();
-      await pyodide.runPythonAsync(`
+  async function loadAndInitPyodide() {
+    pyodide = await loadPyodide();
+    await pyodide.runPythonAsync(`
 def highlight(txt, word):
-    return txt.replace(word, f"*{word}*")
+    return txt.replace(word, f"<mark>{word}</mark>")
 
 def bin_search(word, target):
     l, r = 0, len(word) - 1
@@ -135,13 +135,38 @@ def search_text(user_word, full_text):
     words = sorted(text_upper.replace(",", "").replace(".", "").split())
     index = bin_search(words, user_word)
     if index != -1:
-        highlighted = highlight(text_upper, user_word)
+        highlighted = highlight(full_text, user_word)
         return "✅ Word found!\\n\\n" + highlighted
     else:
         return "❌ Word not found. Please try again."
 `);
+  }
+
+  // Load Pyodide only after script is fully loaded
+  window.addEventListener("load", async () => {
+    try {
+      await loadAndInitPyodide();
+      console.log("✅ Pyodide loaded and ready.");
+    } catch (err) {
+      console.error("❌ Failed to load Pyodide:", err);
     }
-    main();
+  });
+
+  async function runCode() {
+    const text = document.getElementById("textInput").value;
+    const word = document.getElementById("wordInput").value;
+
+    try {
+      const searchFn = pyodide.globals.get("search_text");
+      const result = searchFn(word, text).toString(); // convert PyProxy to string
+      document.getElementById("output").innerHTML = result;
+      searchFn.destroy();
+    } catch (err) {
+      document.getElementById("output").textContent = "❌ Error: " + err;
+    }
+  }
+</script>
+
 
     async function runCode() {
   const text = document.getElementById("textInput").value;
