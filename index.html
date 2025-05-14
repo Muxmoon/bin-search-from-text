@@ -144,16 +144,19 @@ def search_text(user_word, full_text):
     main();
 
     async function runCode() {
-      const text = document.getElementById("textInput").value;
-      const word = document.getElementById("wordInput").value;
+  const text = document.getElementById("textInput").value;
+  const word = document.getElementById("wordInput").value;
 
-      try {
-        const result = await pyodide.globals.get("search_text")(word, text);
-        document.getElementById("output").textContent = result;
-      } catch (err) {
-        document.getElementById("output").textContent = "Error: " + err;
-      }
-    }
+  try {
+    const searchFn = pyodide.globals.get("search_text");
+    const result = searchFn(word, text).toString(); 
+    document.getElementById("output").textContent = result;
+    searchFn.destroy();
+  } catch (err) {
+    document.getElementById("output").textContent = "❌ Error: " + err;
+  }
+}
+
   </script>
 </body>
 </html>
